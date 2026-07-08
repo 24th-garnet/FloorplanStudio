@@ -50,6 +50,7 @@ let dxfGeometry = null;
 let dxfPlanLayers = [];
 let roomPlanFloorData = null;
 let roomPlanDisplayState = null;
+let dxfPlanDisplayBounds = null;
 let floorPlanResizeObserver = null;
 const PLAN_CANVAS_PAD_PX = 28;
 const PLAN_HANDLE_HIT_PX = 11;
@@ -4296,6 +4297,69 @@ function expandPlanBounds(bounds, marginRatio = 0.04) {
   };
 }
 
+function computeDxfPlanDisplayBounds() {
+  if (!dxfGeometry?.positions?.length) return null;
+  const { positions } = dxfGeometry;
+  let minX;
+  let maxX;
+  let minZ;
+  let maxZ;
+  if (dxfGeometry.bounds?.min && dxfGeometry.bounds?.max) {
+    minX = dxfGeometry.bounds.min[0];
+    maxX = dxfGeometry.bounds.max[0];
+    minZ = dxfGeometry.bounds.min[2];
+    maxZ = dxfGeometry.bounds.max[2];
+  } else {
+    minX = Infinity;
+    maxX = -Infinity;
+    minZ = Infinity;
+    maxZ = -Infinity;
+    for (let i = 0; i < positions.length; i += 3) {
+      const x = positions[i];
+      const z = positions[i + 2];
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+      minZ = Math.min(minZ, z);
+      maxZ = Math.max(maxZ, z);
+    }
+  }
+
+  const rawBounds = {
+    minU: minX,
+    maxU: maxX,
+    minV: worldZToPlanV(maxZ),
+    maxV: worldZToPlanV(minZ),
+  };
+  const padded = expandPlanBounds(rawBounds, 0.06);
+  const centerU = (padded.minU + padded.maxU) / 2;
+  const centerV = (padded.minV + padded.maxV) / 2;
+  const spanU = Math.max(padded.maxU - padded.minU, 0.01);
+  const spanV = Math.max(padded.maxV - padded.minV, 0.01);
+  const rotate90 = spanU > spanV;
+
+  const applyPlanRotation = (u, v) => {
+    const du = u - centerU;
+    const dv = v - centerV;
+    if (!rotate90) return { u, v };
+    return { u: centerU + dv, v: centerV - du };
+  };
+
+  let fitMinU = Infinity;
+  let fitMaxU = -Infinity;
+  let fitMinV = Infinity;
+  let fitMaxV = -Infinity;
+  for (let i = 0; i < positions.length; i += 3) {
+    const u = positions[i];
+    const v = worldZToPlanV(positions[i + 2]);
+    const p = applyPlanRotation(u, v);
+    fitMinU = Math.min(fitMinU, p.u);
+    fitMaxU = Math.max(fitMaxU, p.u);
+    fitMinV = Math.min(fitMinV, p.v);
+    fitMaxV = Math.max(fitMaxV, p.v);
+  }
+  return expandPlanBounds({ minU: fitMinU, maxU: fitMaxU, minV: fitMinV, maxV: fitMaxV }, 0.04);
+}
+
 function computePlanDisplayTransform(items) {
   const floors = items.filter((item) => normalizeCategory(item.category) === "floor");
   const candidates = floors.length ? floors : items;
@@ -4391,7 +4455,9 @@ function applyFloorPlanPopupDefaultSize() {
 }
 
 function shouldAutoFitFloorPlanPopup() {
-  return sessionKind === "usdz" && Boolean(roomPlanDisplayState?.bounds);
+  if (sessionKind === "usdz") return Boolean(roomPlanDisplayState?.bounds);
+  if (sessionKind === "dxf") return Boolean(dxfPlanDisplayBounds || dxfGeometry?.positions?.length);
+  return false;
 }
 
 function measureFloorPlanCanvasBox() {
@@ -4929,6 +4995,7 @@ function paintDxfFloorPlan(ctx, w, h) {
     fitMaxV = Math.max(fitMaxV, p.v);
   }
   const fitBounds = expandPlanBounds({ minU: fitMinU, maxU: fitMaxU, minV: fitMinV, maxV: fitMaxV }, 0.04);
+  dxfPlanDisplayBounds = fitBounds;
   const fitSpanU = Math.max(fitBounds.maxU - fitBounds.minU, 0.01);
   const fitSpanV = Math.max(fitBounds.maxV - fitBounds.minV, 0.01);
   const basePad = PLAN_CANVAS_PAD_PX;
@@ -4945,6 +5012,17 @@ function paintDxfFloorPlan(ctx, w, h) {
     const v = worldZToPlanV(Number(z));
     const p = applyPlanRotation(u, v);
     return toCanvasUv(p.u, p.v);
+  };
+
+  floorPlanPaintMapping = {
+    minU: fitBounds.minU,
+    maxU: fitBounds.maxU,
+    minV: fitBounds.minV,
+    maxV: fitBounds.maxV,
+    padX,
+    padY,
+    scale,
+    transform: { rotationRad: rotate90 ? Math.PI / 2 : 0, pivot: [centerU, centerV] },
   };
 
   // Draw grid in plan space, post-rotation.
@@ -5022,10 +5100,14 @@ function drawFloorPlanView({ afterLayout = false } = {}) {
   if (sessionKind === "usdz") {
     updateRoomPlanDisplayState();
   }
+  if (sessionKind === "dxf") {
+    dxfPlanDisplayBounds = computeDxfPlanDisplayBounds();
+  }
   const autoFit = shouldAutoFitFloorPlanPopup();
   if (!floorPlanUserSized) {
     if (autoFit) {
-      resizeFloorPlanPopupForBounds(roomPlanDisplayState.bounds);
+      const bounds = sessionKind === "usdz" ? roomPlanDisplayState?.bounds : dxfPlanDisplayBounds;
+      resizeFloorPlanPopupForBounds(bounds);
     } else {
       applyFloorPlanPopupDefaultSize();
     }
