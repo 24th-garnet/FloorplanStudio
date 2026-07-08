@@ -4929,11 +4929,17 @@ function paintDxfFloorPlan(ctx, w, h) {
     fitMaxV = Math.max(fitMaxV, p.v);
   }
   const fitBounds = expandPlanBounds({ minU: fitMinU, maxU: fitMaxU, minV: fitMinV, maxV: fitMaxV }, 0.04);
-  const pad = PLAN_CANVAS_PAD_PX;
   const fitSpanU = Math.max(fitBounds.maxU - fitBounds.minU, 0.01);
   const fitSpanV = Math.max(fitBounds.maxV - fitBounds.minV, 0.01);
-  const scale = Math.min((w - pad * 2) / fitSpanU, (h - pad * 2) / fitSpanV);
-  const toCanvasUv = (u, v) => planUvToCanvas(Number(u), Number(v), fitBounds.minU, fitBounds.maxU, fitBounds.minV, pad, scale);
+  const basePad = PLAN_CANVAS_PAD_PX;
+  const scale = Math.min((w - basePad * 2) / fitSpanU, (h - basePad * 2) / fitSpanV);
+  // Center the fitted bounds so leftover margin is split evenly.
+  const padX = Math.max(basePad, (w - fitSpanU * scale) / 2);
+  const padY = Math.max(basePad, (h - fitSpanV * scale) / 2);
+  const toCanvasUv = (u, v) => [
+    padX + (fitBounds.maxU - Number(u)) * scale,
+    padY + (Number(v) - fitBounds.minV) * scale,
+  ];
   const toCanvas = (x, z) => {
     const u = Number(x);
     const v = worldZToPlanV(Number(z));
