@@ -79,6 +79,19 @@
               </div>
             </details>
 
+            <details class="sidebar-panel" data-sidebar="dxf-layers">
+              <summary class="sidebar-panel-head">
+                <span class="sidebar-chevron" aria-hidden="true"></span>
+                <span class="sidebar-panel-title-row">
+                  <span class="sidebar-panel-title">DXF Layers</span>
+                  <span class="sidebar-panel-badge">PolyCAM</span>
+                </span>
+              </summary>
+              <div class="sidebar-panel-body">
+                <div id="dxfPlanLayers" class="dxf-layer-panel" hidden></div>
+              </div>
+            </details>
+
             <details class="sidebar-panel" data-sidebar="roomplan-objects">
               <summary class="sidebar-panel-head">
                 <span class="sidebar-chevron" aria-hidden="true"></span>
@@ -385,7 +398,6 @@
         <div class="extrusion-panel-head-accent" aria-hidden="true"></div>
       </header>
       <div class="viewer-stage floorplan-viewer">
-        <div id="dxfPlanLayers" class="dxf-layer-panel" hidden></div>
         <canvas id="dxfPlanCanvas"></canvas>
       </div>
       <div

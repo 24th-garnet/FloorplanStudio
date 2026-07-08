@@ -4891,25 +4891,58 @@ function paintDxfFloorPlan(ctx, w, h) {
     }
   }
 
-  const minU = minX;
-  const maxU = maxX;
-  const minV = worldZToPlanV(maxZ);
-  const maxV = worldZToPlanV(minZ);
-  const pad = 28;
-  const spanU = Math.max(maxU - minU, 0.01);
-  const spanV = Math.max(maxV - minV, 0.01);
-  const scale = Math.min((w - pad * 2) / spanU, (h - pad * 2) / spanV);
-  const toCanvas = (x, z) => planUvToCanvas(
-    Number(x),
-    worldZToPlanV(z),
-    minU,
-    maxU,
-    minV,
-    pad,
-    scale,
-  );
+  // Plan-space bounds are computed from ALL vectors (all layers), regardless of visibility.
+  // Then rotate the plan 90° if needed so the bounding box long side is vertical.
+  const rawBounds = {
+    minU: minX,
+    maxU: maxX,
+    minV: worldZToPlanV(maxZ),
+    maxV: worldZToPlanV(minZ),
+  };
+  const padded = expandPlanBounds(rawBounds, 0.06);
+  const centerU = (padded.minU + padded.maxU) / 2;
+  const centerV = (padded.minV + padded.maxV) / 2;
+  const spanU = Math.max(padded.maxU - padded.minU, 0.01);
+  const spanV = Math.max(padded.maxV - padded.minV, 0.01);
+  const rotate90 = spanU > spanV;
 
-  drawDxfPlanGrid(ctx, minX, maxX, minZ, maxZ, toCanvas);
+  const applyPlanRotation = (u, v) => {
+    const du = u - centerU;
+    const dv = v - centerV;
+    if (!rotate90) return { u, v };
+    // Clockwise 90° around center (u,v) -> (v, -u)
+    return { u: centerU + dv, v: centerV - du };
+  };
+
+  // Compute bounds in the rotated space (so we can fit precisely).
+  let fitMinU = Infinity;
+  let fitMaxU = -Infinity;
+  let fitMinV = Infinity;
+  let fitMaxV = -Infinity;
+  for (let i = 0; i < positions.length; i += 3) {
+    const u = positions[i];
+    const v = worldZToPlanV(positions[i + 2]);
+    const p = applyPlanRotation(u, v);
+    fitMinU = Math.min(fitMinU, p.u);
+    fitMaxU = Math.max(fitMaxU, p.u);
+    fitMinV = Math.min(fitMinV, p.v);
+    fitMaxV = Math.max(fitMaxV, p.v);
+  }
+  const fitBounds = expandPlanBounds({ minU: fitMinU, maxU: fitMaxU, minV: fitMinV, maxV: fitMaxV }, 0.04);
+  const pad = PLAN_CANVAS_PAD_PX;
+  const fitSpanU = Math.max(fitBounds.maxU - fitBounds.minU, 0.01);
+  const fitSpanV = Math.max(fitBounds.maxV - fitBounds.minV, 0.01);
+  const scale = Math.min((w - pad * 2) / fitSpanU, (h - pad * 2) / fitSpanV);
+  const toCanvasUv = (u, v) => planUvToCanvas(Number(u), Number(v), fitBounds.minU, fitBounds.maxU, fitBounds.minV, pad, scale);
+  const toCanvas = (x, z) => {
+    const u = Number(x);
+    const v = worldZToPlanV(Number(z));
+    const p = applyPlanRotation(u, v);
+    return toCanvasUv(p.u, p.v);
+  };
+
+  // Draw grid in plan space, post-rotation.
+  drawDxfPlanGrid(ctx, fitBounds.minU, fitBounds.maxU, fitBounds.minV, fitBounds.maxV, (u, v) => toCanvasUv(u, v));
 
   ctx.strokeStyle = DXF_PLAN_THEME.line;
   ctx.lineWidth = 1;
