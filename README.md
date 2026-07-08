@@ -9,10 +9,6 @@ Flask ベースの Web アプリです。RoomPlan / Scaniverse の USDZ と Poly
 | パス | 内容 |
 |------|------|
 | `/` | Studio UI（`templates/suite.html`） |
-| `/editor` | 同上（互換エイリアス） |
-| `/simple` | 同上（互換エイリアス） |
-
-※ 以前の「ホーム / フル編集 / シンプル編集」用テンプレート（`hub.html`、`editor.html`、`simple_editor.html` など）はリポジトリに残っていますが、現行ルートはすべて `suite.html` を返します。
 
 ## 主な機能（Studio サイドバー）
 
@@ -88,10 +84,11 @@ FloorplanStudio/
 ├── wall_extract.py
 ├── wall_extrude.py
 ├── templates/
-│   └── suite.html         # 現行 UI
+│   └── suite.html         # UI
 ├── static/
 │   ├── main.js            # Studio 本体
 │   ├── suite.js / suite.css
+│   ├── style.css
 │   ├── walk-bridge.js
 │   └── input-sources.js
 ├── assets/replacements/   # オブジェクト置換用アセット

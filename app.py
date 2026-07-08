@@ -1739,16 +1739,6 @@ def suite():
     return render_template("suite.html")
 
 
-@app.route("/editor")
-def editor():
-    return render_template("suite.html")
-
-
-@app.route("/simple")
-def simple_editor():
-    return render_template("suite.html")
-
-
 @app.get("/favicon.ico")
 def favicon():
     return ("", 204)
