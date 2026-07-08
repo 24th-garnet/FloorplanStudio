@@ -1,0 +1,94 @@
+html, body {
+  margin: 0;
+  min-height: 100%;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f4f6f8;
+  color: #1a1a1a;
+}
+
+.hub {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3rem;
+}
+
+.hub-header {
+  margin-bottom: 2rem;
+}
+
+.hub-kicker {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.hub-header h1 {
+  margin: 0.35rem 0 0.5rem;
+  font-size: 1.75rem;
+}
+
+.hub-lead {
+  margin: 0;
+  color: #444;
+  line-height: 1.6;
+}
+
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.module-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.module-card h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.module-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.5;
+}
+
+.module-origin {
+  font-size: 0.75rem !important;
+  color: #888 !important;
+}
+
+.module-link {
+  margin-top: auto;
+  padding-top: 0.75rem;
+  font-weight: 600;
+  color: #1a5fb4;
+  text-decoration: none;
+}
+
+.module-link:hover {
+  text-decoration: underline;
+}
+
+.hub-footer {
+  margin-top: 2rem;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.hub-footer code {
+  background: #e8eaed;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}

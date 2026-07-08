@@ -1,0 +1,6 @@
+# Generated ML PoC artifacts (large; re-create via setup_compare_models.py)
+*.onnx
+*.onnx.data
+*.meta.json
+best.safetensors
+weights/

@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Floorplan Studio</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/suite.css?v=20260708-walkthrough" />
+</head>
+<body class="suite-body">
+  <div class="suite-workspaces">
+    <div id="workspace-studio" class="workspace workspace-studio">
+      <div id="app">
+        <aside id="studioSidebar" class="suite-sidebar">
+          <h1 class="sidebar-title">Floorplan Studio</h1>
+          <nav class="sidebar-nav" aria-label="Tools">
+
+            <details class="sidebar-panel" data-sidebar="import" open>
+              <summary class="sidebar-panel-head">
+                <span class="sidebar-chevron" aria-hidden="true"></span>
+                <span class="sidebar-panel-title">Import</span>
+              </summary>
+              <div class="sidebar-panel-body">
+                <fieldset id="studioInputSourcePicker" class="input-source-picker" aria-label="Import source">
+                  <div class="input-source-track">
+                    <span class="input-source-thumb" aria-hidden="true"></span>
+                    <label class="input-source-option">
+                      <input type="radio" name="studioInputSource" value="roomplan_usdz" checked />
+                      <span class="input-source-option-inner">
+                        <span class="input-source-label">RoomPlan</span>
+                        <span class="input-source-ext" aria-hidden="true">.usdz</span>
+                      </span>
+                    </label>
+                    <label class="input-source-option">
+                      <input type="radio" name="studioInputSource" value="polycam_dxf" />
+                      <span class="input-source-option-inner">
+                        <span class="input-source-label">PolyCAM</span>
+                        <span class="input-source-ext" aria-hidden="true">.dxf</span>
+                      </span>
+                    </label>
+                    <label class="input-source-option">
+                      <input type="radio" name="studioInputSource" value="scaniverse_usdz" />
+                      <span class="input-source-option-inner">
+                        <span class="input-source-label">Scaniverse</span>
+                        <span class="input-source-ext" aria-hidden="true">.usdz</span>
+                      </span>
+                    </label>
+                  </div>
+                </fieldset>
+                <div class="import-block">
+                  <div id="importDropZone" class="import-dropzone" aria-label="Drop file to stage">
+                    <div class="import-dropzone-glow" aria-hidden="true"></div>
+                    <div class="import-dropzone-inner">
+                      <div class="import-dropzone-icon" aria-hidden="true">
+                        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M24 32V14M24 14L17 21M24 14L31 21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                          <path d="M12 34H36" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                        </svg>
+                      </div>
+                      <p id="importDropLabel" class="import-dropzone-title">Drop file here</p>
+                    </div>
+                  </div>
+                  <input id="importFileInput" class="import-file-input" type="file" accept=".usdz" tabindex="-1" />
+                  <button type="button" id="importBtn" class="import-btn" disabled>Import</button>
+                </div>
+              </div>
+            </details>
+
+            <details class="sidebar-panel" data-sidebar="dxf-walls">
+              <summary class="sidebar-panel-head">
+                <span class="sidebar-chevron" aria-hidden="true"></span>
+                <span class="sidebar-panel-title-row">
+                  <span class="sidebar-panel-title">Wall Extrusion</span>
+                  <span class="sidebar-panel-badge">PolyCAM</span>
+                </span>
+              </summary>
+              <div class="sidebar-panel-body">
+                <button id="runWallExtrusion" type="button" class="disabled">Extrusion</button>
+              </div>
+            </details>
+
+            <details class="sidebar-panel" data-sidebar="roomplan-objects">
+              <summary class="sidebar-panel-head">
+                <span class="sidebar-chevron" aria-hidden="true"></span>
+                <span class="sidebar-panel-title-row">
+                  <span class="sidebar-panel-title">Objects</span>
+                  <span class="sidebar-panel-badge">RoomPlan</span>
+                </span>
+              </summary>
+              <div class="sidebar-panel-body">
+                <h3 class="sidebar-subtitle">Layers</h3>
+                <div id="layers" class="layer-panel">
+                  <div class="meta">Import a RoomPlan file to populate layers.</div>
+                </div>
+                <h3 class="sidebar-subtitle">Objects</h3>
+                <div id="objects"></div>
+                <button id="deleteSelected" type="button" class="disabled sidebar-action-btn">Delete selected object</button>
+              </div>
+            </details>
+
+            <details class="sidebar-panel">
+              <summary class="sidebar-panel-head">
+                <span class="sidebar-chevron" aria-hidden="true"></span>
+                <span class="sidebar-panel-title-row">
+                  <span class="sidebar-panel-title">Replace</span>
+                  <span class="sidebar-panel-badge">RoomPlan</span>
+                </span>
+              </summary>
+              <div class="sidebar-panel-body sidebar-panel-body-replace">
+                <div id="tagBulkControls" class="replace-panel tag-bulk-controls disabled">
+                  <div class="replace-panel-top">
+                    <label class="replace-field replace-field-tag">
+                      <span class="replace-field-label">Target tag</span>
+                      <div class="replace-select-wrap replace-select-wrap-tag">
+                        <select id="tagBulkTag" class="replace-select replace-select-tag"></select>
+                        <span class="replace-select-chevron" aria-hidden="true">
+                          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                          </svg>
+                        </span>
+                      </div>
+                    </label>
+                  </div>
+                  <div class="replace-columns">
+                    <article id="tagBulkTextureBlock" class="replace-card replace-card-texture">
+                      <header class="replace-card-head">
+                        <span class="replace-card-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/>
+                            <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/>
+                            <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/>
+                            <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/>
+                          </svg>
+                        </span>
+                        <h4 class="replace-card-title">Texture replace</h4>
+                      </header>
+                      <div class="replace-card-body">
+                        <label class="replace-field">
+                          <span class="replace-field-label">Texture</span>
+                          <select id="tagBulkTexture" class="replace-select"></select>
+                        </label>
+                        <div class="replace-actions">
+                          <button type="button" id="tagBulkApplyTexture" class="replace-btn replace-btn-primary">Apply</button>
+                          <button type="button" id="tagBulkRemoveTexture" class="replace-btn replace-btn-ghost">Remove</button>
+                        </div>
+                      </div>
+                    </article>
+                    <article id="tagBulkReplacementBlock" class="replace-card replace-card-object">
+                      <header class="replace-card-head">
+                        <span class="replace-card-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M4 7h16M4 12h10M4 17h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                            <path d="M18 10l3 2-3 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                          </svg>
+                        </span>
+                        <h4 class="replace-card-title">Object replace</h4>
+                      </header>
+                      <div class="replace-card-body">
+                        <label class="replace-field">
+                          <span class="replace-field-label">Asset</span>
+                          <select id="tagBulkReplacement" class="replace-select"></select>
+                        </label>
+                        <div class="replace-actions">
+                          <button type="button" id="tagBulkApplyReplacement" class="replace-btn replace-btn-primary">Apply</button>
+                          <button type="button" id="tagBulkRemoveReplacement" class="replace-btn replace-btn-ghost">Remove</button>
+                        </div>
+                      </div>
+                    </article>
+                  </div>
+                </div>
+              </div>
+            </details>
+
+            <details class="sidebar-panel" data-sidebar="roomplan-transform">
+              <summary class="sidebar-panel-head">
+                <span class="sidebar-chevron" aria-hidden="true"></span>
+                <span class="sidebar-panel-title-row">
+                  <span class="sidebar-panel-title">Transform</span>
+                  <span class="sidebar-panel-badge">RoomPlan</span>
+                </span>
+              </summary>
+              <div class="sidebar-panel-body">
+                <div id="transformModePicker" class="transform-mode-round" role="group" aria-label="Transform mode">
+                  <button type="button" class="transform-mode-round-btn" data-mode="translate" aria-pressed="true">Move</button>
+                  <button type="button" class="transform-mode-round-btn" data-mode="scale" aria-pressed="false">Transform</button>
+                  <button type="button" class="transform-mode-round-btn" data-mode="rotate" aria-pressed="false">Rotate</button>
+                </div>
+                <button id="transformUndo" type="button" class="transform-undo-btn disabled" disabled aria-disabled="true">Undo</button>
+                <div id="editor" class="disabled" hidden aria-hidden="true">
+                  <input id="x" type="hidden" />
+                  <input id="y" type="hidden" />
+                  <input id="z" type="hidden" />
+                  <input id="yaw" type="hidden" />
+                  <div id="replacementControls" hidden>
+                    <select id="replacementAsset">
+                      <option value="chair">Chair</option>
+                      <option value="table">Table</option>
+                      <option value="storage">Storage</option>
+                    </select>
+                    <button id="applyReplacement" type="button">Replace with asset</button>
+                    <button id="removeReplacement" type="button">Remove replacement</button>
+                  </div>
+                  <div id="textureControls" hidden>
+                    <select id="textureAsset">
+                      <option value="floor">Floor</option>
+                      <option value="wall">Wall</option>
+                    </select>
+                    <button id="applyTexture" type="button">Apply texture</button>
+                    <button id="removeTexture" type="button">Remove texture</button>
+                  </div>
+                  <button id="apply" type="button" hidden>Apply</button>
+                </div>
+              </div>
+            </details>
+
+            <details class="sidebar-panel sidebar-panel-walkthrough" data-sidebar="walkthrough">
+              <summary class="sidebar-panel-head">
+                <span class="sidebar-chevron" aria-hidden="true"></span>
+                <span class="sidebar-panel-title-row">
+                  <span class="sidebar-panel-title">Walkthrough</span>
+                  <span class="sidebar-panel-badge sidebar-panel-badge-scaniverse">Scaniverse</span>
+                </span>
+              </summary>
+              <div class="sidebar-panel-body walkthrough-panel-body">
+                <div id="walkModeControls" class="walkthrough-controls">
+                  <div class="walkthrough-spawn-group">
+                    <span class="walkthrough-group-label">Spawn</span>
+                    <button
+                      id="walkPickSpawn"
+                      type="button"
+                      class="walkthrough-btn walkthrough-btn-ghost"
+                      onclick="return window.__walkClick('walkPickSpawn', event)"
+                    >
+                      <span class="walkthrough-btn-label">Click mesh</span>
+                    </button>
+                  </div>
+                  <button
+                    id="walkModeToggle"
+                    type="button"
+                    class="walkthrough-btn walkthrough-btn-primary"
+                    onclick="return window.__walkClick('walkModeToggle', event)"
+                  >
+                    Start Walkthrough
+                  </button>
+                  <div id="walkModeStatus" class="walkthrough-status" hidden></div>
+                </div>
+              </div>
+            </details>
+
+            <details class="sidebar-panel sidebar-panel-export" data-sidebar="export">
+              <summary class="sidebar-panel-head">
+                <span class="sidebar-chevron" aria-hidden="true"></span>
+                <span class="sidebar-panel-title-row">
+                  <span class="sidebar-panel-title">Export</span>
+                  <span class="sidebar-panel-badge">RoomPlan</span>
+                </span>
+              </summary>
+              <div class="sidebar-panel-body">
+                <div id="exportFormats" class="export-panel">
+                  <div class="meta">Import USDZ to export as DXF.</div>
+                </div>
+              </div>
+            </details>
+
+          </nav>
+
+          <dialog id="tagEditorDialog" class="tag-editor-dialog">
+            <h3 class="subheading">Tags — <span id="tagEditorTitle"></span></h3>
+            <div id="tagEditorChips" class="tag-list"></div>
+            <div class="tag-editor-add">
+              <label>Add tag
+                <select id="tagEditorAdd"></select>
+              </label>
+              <button type="button" id="tagEditorAddBtn">Add</button>
+            </div>
+            <p class="hint">ハイライト枠は RoomPlan 自動検出タグです。</p>
+            <div class="tag-editor-actions">
+              <button type="button" id="tagEditorReset">Reset to auto</button>
+              <button type="button" id="tagEditorClose">Close</button>
+            </div>
+          </dialog>
+        </aside>
+        <div class="sidebar-toggle-rail">
+          <button
+            type="button"
+            id="sidebarEdgeToggle"
+            class="sidebar-edge-toggle"
+            aria-expanded="true"
+            aria-controls="studioSidebar"
+            aria-label="サイドバーを隠す"
+            title="サイドバーを隠す"
+          >
+            <span class="sidebar-edge-toggle-body" aria-hidden="true">
+              <svg class="sidebar-edge-toggle-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path class="sidebar-edge-toggle-arrow" d="M14.5 8.5 L10.5 12 L14.5 15.5" />
+              </svg>
+            </span>
+          </button>
+        </div>
+        <main>
+          <div id="viewerWorkspace" class="viewer-workspace">
+          <section class="panel panel-3d extrusion-panel" id="viewer3dPanel">
+            <header class="extrusion-panel-head">
+              <div class="extrusion-panel-head-text">
+                <h3 class="panel-3d-heading">3D Viewer</h3>
+              </div>
+              <div class="extrusion-panel-head-accent" aria-hidden="true"></div>
+            </header>
+            <div id="extrudeCompareBar" class="extrude-compare-bar" hidden>
+              <div class="extrude-compare-bar-row">
+                <div id="extrudeCompareSourceBtns" class="extrude-compare-sources"></div>
+              </div>
+              <div id="extrudeCompareStats" class="extrude-compare-stats meta"></div>
+            </div>
+            <div class="viewer-stage extrusion-viewer">
+              <div id="viewer"></div>
+              <div id="viewerDock" class="viewer-dock" aria-label="Viewer options">
+                <div class="viewer-dock-controls">
+                  <button
+                    type="button"
+                    id="showFloorPlan"
+                    class="floorplan-toggle"
+                    aria-pressed="false"
+                    title="Show Floor Plan panel"
+                  >
+                    <span class="floorplan-toggle-icon" aria-hidden="true">
+                      <svg class="floorplan-toggle-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3.5" y="3.5" width="17" height="17" rx="2.25" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M3.5 12h17M12 3.5v17" stroke="currentColor" stroke-width="1.25" opacity="0.55"/>
+                        <rect x="14.25" y="14.25" width="4.75" height="4.75" rx="0.75" stroke="currentColor" stroke-width="1.25"/>
+                        <path d="M7 8.5h3.5M7 11h2.25" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
+                      </svg>
+                    </span>
+                    <span class="floorplan-toggle-text">
+                      <span class="floorplan-toggle-label">Floor Plan</span>
+                      <span class="floorplan-toggle-hint">2D</span>
+                    </span>
+                  </button>
+                  <div class="viewer-dock-track">
+                  <label class="viewer-dock-option" title="Show USDZ model overlay">
+                    <input id="showRealModel" type="checkbox" checked>
+                    <span>USDZ</span>
+                  </label>
+                  <label class="viewer-dock-option" title="Show editable proxy boxes">
+                    <input id="showProxy" type="checkbox" checked>
+                    <span>Proxy</span>
+                  </label>
+                  <label class="viewer-dock-option" title="Show DXF line geometry">
+                    <input id="showDxf" type="checkbox" checked>
+                    <span>DXF</span>
+                  </label>
+                  <label class="viewer-dock-option" title="Show wall extrusion">
+                    <input id="showWall" type="checkbox" checked>
+                    <span>WALL</span>
+                  </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+          </div>
+          <div id="viewerOverlay" class="overlay" hidden></div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <div id="floorPlanPopup" class="floorplan-popup" hidden>
+    <section class="panel panel-3d extrusion-panel floorplan-panel" id="floorPlanPanel">
+      <button
+        type="button"
+        id="closeFloorPlan"
+        class="floorplan-popup-close"
+        aria-label="Close Floor Plan"
+        title="Close Floor Plan"
+      >
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M7 7l10 10M17 7L7 17" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <header class="extrusion-panel-head floorplan-popup-drag-handle">
+        <div class="extrusion-panel-head-text">
+          <h3 class="panel-3d-heading">Floor Plan</h3>
+        </div>
+        <div class="extrusion-panel-head-accent" aria-hidden="true"></div>
+      </header>
+      <div class="viewer-stage floorplan-viewer">
+        <div id="dxfPlanLayers" class="dxf-layer-panel" hidden></div>
+        <canvas id="dxfPlanCanvas"></canvas>
+      </div>
+      <div
+        class="floorplan-popup-resize-handle"
+        aria-hidden="true"
+        title="Resize Floor Plan window"
+      ></div>
+    </section>
+  </div>
+
+  <script src="/static/walk-bridge.js?v=20260708-walkthrough-spawn"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module" src="/static/main.js?v=20260708-sidebar-defaults"></script>
+  <script src="/static/suite.js?v=20260708-sidebar-defaults"></script>
+</body>
+</html>

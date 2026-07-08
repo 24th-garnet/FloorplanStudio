@@ -1,0 +1,12 @@
+# One-time export (torch + segmentation-models-pytorch + safetensors + onnx)
+torch>=2.2
+segmentation-models-pytorch>=0.3.3
+safetensors>=0.4
+onnx>=1.16
+onnxscript>=0.1.0
+
+# Inference + compare (also in main requirements.txt)
+onnxruntime>=1.17
+transformers>=4.40
+pillow>=10.0
+cairosvg>=2.7

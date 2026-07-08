@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Floorplan Studio</title>
+  <link rel="stylesheet" href="/static/hub.css" />
+</head>
+<body>
+  <div class="hub">
+    <header class="hub-header">
+      <p class="hub-kicker">Floorplan Studio</p>
+      <h1>統合アプリケーション</h1>
+      <p class="hub-lead">USDZ編集・平面図・DXF壁押出を1つのサーバで提供します。</p>
+    </header>
+
+    <section class="module-grid">
+      <article class="module-card">
+        <h2>フルエディタ</h2>
+        <p>RoomPlan USDZ の編集、DXF 平面図、壁抽出・押出、ML PoC、レイヤー管理。</p>
+        <p class="module-origin">structureExtractor / topViewer / xdf_extrusion</p>
+        <a class="module-link" href="/editor">開く →</a>
+      </article>
+
+      <article class="module-card">
+        <h2>シンプルエディタ</h2>
+        <p>USDZ をアップロードし、オブジェクトの位置・回転のみを編集する軽量モード。</p>
+        <p class="module-origin">structureExtractor</p>
+        <a class="module-link" href="/simple">開く →</a>
+      </article>
+
+    </section>
+
+    <footer class="hub-footer">
+      <p>起動: <code>python3 app.py</code>（デフォルト <code>http://localhost:8100</code>）</p>
+    </footer>
+  </div>
+</body>
+</html>

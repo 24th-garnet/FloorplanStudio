@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Runtime data
+sessions/
+uploads/
+
+# ML models (download via scripts)
+scripts/floorplan_ml_poc/models/*.onnx
+
+# IDE / OS
+.cursor/
+.DS_Store
+*.swp
+
+# Build artifacts
+dist/
+node_modules/
+
+# Large scratch files
+*.usdz
+!assets/replacements/*.usdz
