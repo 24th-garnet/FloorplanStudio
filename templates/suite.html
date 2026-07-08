@@ -83,12 +83,12 @@
               <summary class="sidebar-panel-head">
                 <span class="sidebar-chevron" aria-hidden="true"></span>
                 <span class="sidebar-panel-title-row">
-                  <span class="sidebar-panel-title">DXF Layers</span>
+                  <span class="sidebar-panel-title">Layers</span>
                   <span class="sidebar-panel-badge">PolyCAM</span>
                 </span>
               </summary>
               <div class="sidebar-panel-body">
-                <div id="dxfPlanLayers" class="dxf-layer-panel" hidden></div>
+                <div id="dxfPlanLayers" class="layer-panel" hidden></div>
               </div>
             </details>
 
@@ -226,6 +226,21 @@
               </div>
             </details>
 
+            <details class="sidebar-panel sidebar-panel-export" data-sidebar="export">
+              <summary class="sidebar-panel-head">
+                <span class="sidebar-chevron" aria-hidden="true"></span>
+                <span class="sidebar-panel-title-row">
+                  <span class="sidebar-panel-title">Export</span>
+                  <span class="sidebar-panel-badge">RoomPlan</span>
+                </span>
+              </summary>
+              <div class="sidebar-panel-body">
+                <div id="exportFormats" class="export-panel">
+                  <div class="meta">Import USDZ to export as DXF.</div>
+                </div>
+              </div>
+            </details>
+
             <details class="sidebar-panel sidebar-panel-walkthrough" data-sidebar="walkthrough">
               <summary class="sidebar-panel-head">
                 <span class="sidebar-chevron" aria-hidden="true"></span>
@@ -256,21 +271,6 @@
                     Start Walkthrough
                   </button>
                   <div id="walkModeStatus" class="walkthrough-status" hidden></div>
-                </div>
-              </div>
-            </details>
-
-            <details class="sidebar-panel sidebar-panel-export" data-sidebar="export">
-              <summary class="sidebar-panel-head">
-                <span class="sidebar-chevron" aria-hidden="true"></span>
-                <span class="sidebar-panel-title-row">
-                  <span class="sidebar-panel-title">Export</span>
-                  <span class="sidebar-panel-badge">RoomPlan</span>
-                </span>
-              </summary>
-              <div class="sidebar-panel-body">
-                <div id="exportFormats" class="export-panel">
-                  <div class="meta">Import USDZ to export as DXF.</div>
                 </div>
               </div>
             </details>

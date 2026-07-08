@@ -1099,16 +1099,7 @@ html, body.suite-body {
   display: block;
 }
 
-.suite-body .floorplan-viewer .dxf-layer-panel[hidden] {
-  display: none !important;
-}
-
-.suite-body .floorplan-viewer .dxf-layer-panel {
-  border-bottom: 1px solid var(--border-subtle);
-  background: rgba(20, 6, 12, 0.55);
-  max-height: 22vh;
-  overflow: auto;
-}
+/* DXF layers UI now lives in the sidebar; no floorplan overlay panel. */
 
 /* ── 3D Extrusion panel (modern window) ── */
 .suite-body .extrusion-panel {
@@ -1746,7 +1737,6 @@ body.walk-mode-active .sidebar-panel-walkthrough .walkthrough-status {
 }
 
 .suite-body .ml-compare-panels,
-.suite-body .dxf-layer-panel,
 .suite-body .ml-poc-panel {
   background: var(--surface-panel);
 }

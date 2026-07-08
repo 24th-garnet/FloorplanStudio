@@ -793,7 +793,7 @@ function bindUI() {
     syncObjectDisplayTargets();
   });
   el("showDxf")?.addEventListener("change", () => {
-    if (dxfRoot) dxfRoot.visible = el("showDxf").checked;
+    syncDxfSceneLayerVisibility();
   });
   el("showWall")?.addEventListener("change", syncWallVisibility);
   el("showFloorPlan")?.addEventListener("click", (event) => {
@@ -2747,6 +2747,7 @@ function clearWallHighlight() {
 function clearDxfPlanLayers() {
   dxfPlanLayers = [];
   renderDxfPlanLayerPanel();
+  syncDxfSceneLayerVisibility();
 }
 
 function applyDxfPlanLayers(layers) {
@@ -2762,11 +2763,39 @@ function applyDxfPlanLayers(layers) {
     positions: Array.isArray(layer.positions) ? layer.positions : [],
   }));
   renderDxfPlanLayerPanel();
+  syncDxfSceneLayerVisibility();
 }
 
 function isDxfPlanLayerVisible(layerId) {
   const layer = dxfPlanLayers.find((item) => item.id === layerId);
   return layer ? Boolean(layer.visible) : true;
+}
+
+function getVisibleDxfScenePositions() {
+  if (dxfPlanLayers.length) {
+    const out = [];
+    for (const layer of dxfPlanLayers) {
+      if (!layer.visible) continue;
+      if (!layer.positions?.length) continue;
+      out.push(...layer.positions);
+    }
+    return out;
+  }
+  return dxfGeometry?.positions || null;
+}
+
+function syncDxfSceneLayerVisibility() {
+  if (!scene || !dxfRoot || sessionKind !== "dxf") return;
+  const positions = getVisibleDxfScenePositions();
+  if (!positions?.length) {
+    dxfRoot.visible = false;
+    return;
+  }
+  const geom = new THREE.BufferGeometry();
+  geom.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  dxfRoot.geometry?.dispose?.();
+  dxfRoot.geometry = geom;
+  dxfRoot.visible = el("showDxf")?.checked ?? true;
 }
 
 function renderDxfPlanLayerPanel() {
@@ -2783,18 +2812,26 @@ function renderDxfPlanLayerPanel() {
     return;
   }
   panel.hidden = false;
-  panel.innerHTML = dxfPlanLayers.map((layer) => `
-    <div class="layer-row${layer.visible ? "" : " is-hidden"}">
-      <label class="layer-toggle" title="Show / hide layer on plan view">
-        <input type="checkbox" data-dxf-layer-visible="${escapeHtml(layer.id)}" ${layer.visible ? "checked" : ""}>
-        <span>表示</span>
+  const list = document.createElement("div");
+  list.className = "layer-list";
+
+  for (const layer of dxfPlanLayers) {
+    const label = escapeHtml(layer.label || layer.id);
+    const row = document.createElement("div");
+    row.className = "layer-item" + (layer.visible ? "" : " is-hidden");
+    row.innerHTML = `
+      <label class="layer-check" title="Show / hide layer on plan view">
+        <input type="checkbox" data-dxf-layer-visible="${escapeHtml(layer.id)}" ${layer.visible ? "checked" : ""} aria-label="Show ${label}">
+        <span class="layer-check-box" aria-hidden="true"></span>
       </label>
-      <div>
-        <strong>${escapeHtml(layer.label || layer.id)}</strong>
-        <span class="layer-count"> (${layer.segment_count ?? 0})</span>
-      </div>
-    </div>
-  `).join("");
+      <span class="layer-name">${label}</span>
+      <span class="layer-count">(${layer.segment_count ?? 0})</span>
+    `;
+    list.appendChild(row);
+  }
+
+  panel.innerHTML = "";
+  panel.appendChild(list);
   panel.querySelectorAll("input[data-dxf-layer-visible]").forEach((input) => {
     input.addEventListener("change", () => {
       const layerId = input.getAttribute("data-dxf-layer-visible");
@@ -2809,6 +2846,7 @@ async function setDxfPlanLayerVisibility(layerId, visible) {
   if (layer) layer.visible = visible;
   renderDxfPlanLayerPanel();
   drawFloorPlanView();
+  syncDxfSceneLayerVisibility();
   if (!sessionId || sessionKind !== "dxf") return;
   try {
     const res = await fetch(`/api/dxf-layers/${sessionId}`, {
@@ -2830,6 +2868,7 @@ async function setDxfPlanLayerVisibility(layerId, visible) {
         })),
       );
       drawFloorPlanView();
+      syncDxfSceneLayerVisibility();
     }
   } catch (err) {
     console.error("setDxfPlanLayerVisibility failed:", err);
@@ -5172,8 +5211,9 @@ function buildDxfScene(payload, options = {}) {
   if (!scene || !payload?.positions?.length) return;
   clearDxfScene();
   setDxfGeometry(payload);
+  const positions = getVisibleDxfScenePositions() || payload.positions;
   const geom = new THREE.BufferGeometry();
-  geom.setAttribute("position", new THREE.Float32BufferAttribute(payload.positions, 3));
+  geom.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
   const mat = new THREE.LineBasicMaterial({ color: 0x2b4c6f });
   dxfRoot = new THREE.LineSegments(geom, mat);
   dxfRoot.visible = el("showDxf")?.checked ?? true;
